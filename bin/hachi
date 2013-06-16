@@ -72,12 +72,16 @@ function prompt(fields, params, fn) {
 function callAndProcess(api_module, call, params) {
   hachi.callApi(api_module, call, params, function(err, result) {
     if (err) {
+      if (!hachi_exec.raw && err.message)
+        console.error(err.message);
+
       if (err.required && err.required.length > 0) {
         prompt(err.required, params, function(params) {
           callAndProcess(api_module, call, params);
         });
       }else{
-        console.error(!hachi_exec.raw && err.message || err);
+        if (!err.message)
+          console.log(err);
         process.exit(1);
       }
     }else{
@@ -118,7 +122,8 @@ if (call && call.indexOf('_') !== 0) {
 
      var params = {
       user: hachi_exec.user,
-      app: hachi_exec.app
+      app: hachi_exec.app,
+      args: hachi_exec.args
      };
 
      return callAndProcess(api_module, call, params);

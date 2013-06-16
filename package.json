@@ -19,7 +19,9 @@
   "dependencies": {
     "commander": "1.2.x",
     "nconf": "0.6.x",
-    "cli-table": "0.2.x"
+    "cli-table": "0.2.x",
+    "fstream-npm": "0.1.x",
+    "tar": "0.1.x"
   },
   "main": "./lib/index.js",
   "preferGlobal": true,
