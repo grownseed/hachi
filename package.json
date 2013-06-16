@@ -1,0 +1,32 @@
+{
+  "name": "hachi",
+  "description": "API client module and command line tool for Ishiki",
+  "version": "0.0.1",
+  "author": {
+    "name": "Hadrien Jouet",
+    "email": "hj@grownseed.net"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grownseed/hachi"
+  },
+  "keywords": [
+    "ishiki",
+    "api client",
+    "command line tool",
+    "deployment"
+  ],
+  "dependencies": {
+    "commander": "1.2.x",
+    "nconf": "0.6.x",
+    "cli-table": "0.2.x"
+  },
+  "main": "./lib/index.js",
+  "preferGlobal": true,
+  "bin": {
+    "hachi": "./bin/hachi"
+  },
+  "engines": {
+    "node": "0.8.x"
+  }
+}

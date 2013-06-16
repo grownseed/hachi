@@ -1,0 +1,130 @@
+#!/usr/bin/env node
+
+var hachi_exec = require('commander'),
+  nconf = require('nconf'),
+  Table = require('cli-table'),
+  Hachi = require('../lib');
+
+hachi_exec.version('0.0.1')
+  .usage('[options] <command ...>')
+  .option('-t, --target <target>', 'Ishiki host domain or IP address', '')
+  .option('-p, --port <n>', 'Ishiki host port', '8080', parseInt)
+  .option('-s, --secure', 'Use if host runs over HTTPS')
+  .option('-u, --user <user>', 'Username')
+  .option('-a, --app <app>', 'Application name')
+  .option('-r, --raw', 'Output raw data')
+  .parse(process.argv);
+
+//load saved ishiki hosts
+nconf.file(__dirname + '/../ishiki_hosts.json');
+
+//look for host already configured against current directory
+var host = false,
+  current_path = process.cwd(),
+  path = nconf.get('paths:' + current_path);
+
+if (path && !hachi_exec.target)
+  host = nconf.get('hosts:' + path);
+
+var host_label;
+
+//if host can't be found, use supplied details
+if (!host) {
+  host = {
+    target: hachi_exec.target,
+    port: hachi_exec.port,
+    user: hachi_exec.user,
+    secure: hachi_exec.secure
+  };
+}
+
+if (host.target && host.port && host.user) {
+  host_label = host.target + '_' + host.port;
+  nconf.set('hosts:' + host_label, host);
+  nconf.set('paths:' + current_path, host_label);
+  nconf.save();
+}else{
+  console.log('No target host specified');
+  return hachi_exec.help();
+}
+
+var hachi = new Hachi(host);
+
+function prompt(fields, params, fn) {
+  var f = fields.shift(),
+    label = ' > ' + f + ': ';
+
+  function proceed(value) {
+    params[f] = value;
+
+    if (fields.length == 0)
+      fn(params);
+    else
+      prompt(fields, params, fn);
+  }
+
+  if (f === 'password')
+    hachi_exec.password(label, '*', proceed);
+  else
+    hachi_exec.prompt(label, proceed);
+}
+
+function callAndProcess(api_module, call, params) {
+  hachi.callApi(api_module, call, params, function(err, result) {
+    if (err) {
+      if (err.required && err.required.length > 0) {
+        prompt(err.required, params, function(params) {
+          callAndProcess(api_module, call, params);
+        });
+      }else{
+        console.error(!hachi_exec.raw && err.message || err);
+        process.exit(1);
+      }
+    }else{
+      //save authentication token if one
+      if (result && result.raw && result.raw.token) {
+        nconf.set('hosts:' + host_label + ':token', result.raw.token);
+        nconf.save();
+      }
+
+      if (!hachi_exec.raw && result && result.message && result.message.push) {
+        var table = new Table({
+          head: result.message.shift()
+        });
+
+        for (var i = 0, n = result.message.length; i < n; i++)
+          table.push(result.message[i]);
+
+        result.message = table.toString();
+      }
+
+      console.log(!hachi_exec.raw && result.message || result);
+      process.exit();
+    }
+   });
+}
+
+//find api call
+var call = hachi_exec.args.shift();
+
+if (call && call.indexOf('_') !== 0) {
+  var api_modules = Object.keys(hachi.api),
+    api_module,
+    call;
+
+  for (var i = 0, n = api_modules.length; i < n; i++) {
+    if (hachi.api[api_modules[i]][call] && typeof hachi.api[api_modules[i]][call] === 'function') {
+     api_module = api_modules[i];
+
+     var params = {
+      user: hachi_exec.user,
+      app: hachi_exec.app
+     };
+
+     return callAndProcess(api_module, call, params);
+    }
+  }
+}
+
+//default to showing help
+hachi_exec.help();
