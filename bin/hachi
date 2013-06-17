@@ -13,6 +13,7 @@ hachi_exec.version('0.0.1')
   .option('-u, --user <user>', 'Username')
   .option('-a, --app <app>', 'Application name')
   .option('-r, --raw', 'Output raw data')
+  .option('-x, --stream', 'Stream data')
   .parse(process.argv);
 
 //load saved ishiki hosts
@@ -85,25 +86,31 @@ function callAndProcess(api_module, call, params) {
         process.exit(1);
       }
     }else{
-      //save authentication token if one
-      if (result && result.raw && result.raw.token) {
-        nconf.set('hosts:' + host_label + ':token', result.raw.token);
-        nconf.save();
+      if (result && result.stream && result.raw) {
+        //stream output to console
+        result.raw.on('data', console.log);
+        result.raw.on('end', console.log);
+      }else{
+        //save authentication token if one
+        if (result && result.raw && result.raw.token) {
+          nconf.set('hosts:' + host_label + ':token', result.raw.token);
+          nconf.save();
+        }
+
+        if (!hachi_exec.raw && result && result.message && result.message.push) {
+          var table = new Table({
+            head: result.message.shift()
+          });
+
+          for (var i = 0, n = result.message.length; i < n; i++)
+            table.push(result.message[i]);
+
+          result.message = table.toString();
+        }
+
+        console.log(!hachi_exec.raw && result.message || result);
+        process.exit();
       }
-
-      if (!hachi_exec.raw && result && result.message && result.message.push) {
-        var table = new Table({
-          head: result.message.shift()
-        });
-
-        for (var i = 0, n = result.message.length; i < n; i++)
-          table.push(result.message[i]);
-
-        result.message = table.toString();
-      }
-
-      console.log(!hachi_exec.raw && result.message || result);
-      process.exit();
     }
    });
 }
@@ -123,6 +130,7 @@ if (call && call.indexOf('_') !== 0) {
      var params = {
       user: hachi_exec.user,
       app: hachi_exec.app,
+      stream: hachi_exec.stream,
       args: hachi_exec.args
      };
 
