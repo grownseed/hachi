@@ -123,8 +123,8 @@ if (call && call.indexOf('_') !== 0) {
      var params = {
       user: hachi_exec.user,
       app: hachi_exec.app,
-      port: hachi_exec.port,
-      args: hachi_exec.args
+      port: hachi_exec.port/*,
+      args: hachi_exec.args*/
      };
 
      return callAndProcess(api_module, call, params);
