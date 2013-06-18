@@ -1,15 +1,62 @@
 #!/usr/bin/env node
 
+/*
+ The MIT License
+
+ Copyright (c) 2013 Hadrien Jouet https://github.com/grownseed
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ */
+
 var hachi_exec = require('commander'),
   nconf = require('nconf'),
   Table = require('cli-table'),
   Hachi = require('../lib');
 
 hachi_exec.version('0.0.1')
-  .usage('[options] <command ...>')
+  .usage('[options] <command> [param1, [param2, [...]]]')
   .option('-s, --secure', 'Use if host runs over HTTPS')
   .option('-r, --raw', 'Output raw data')
-  .parse(process.argv);
+
+hachi_exec.on('--help', function() {
+  console.log('  Commands:');
+  console.log('');
+  console.log('    connect     [target [port]]               (use --secure with HTTPS server)');
+  console.log('    login       [user [password]]');
+  console.log('    logout');
+  console.log('    adduser     [user [password [admin]]]     (`y` to make user admin)');
+  console.log('    updateuser  [user [password [admin]]]     (`y` to make user admin)');
+  console.log('');
+  console.log('    deploy      [user [app]]    (package.json `user` and `name` used over args)');
+  console.log('    start       [user [app]]    (package.json `user` and `name` used over args)');
+  console.log('    stop        [user [app]]    (package.json `user` and `name` used over args)');
+  console.log('    restart     [user [app]]    (package.json `user` and `name` used over args)');
+  console.log('    listdrones  [user [app]]');
+  console.log('');
+  console.log('    listproxies [public_port [user [app]]]');
+  console.log('    startproxy  [public_port]');
+  console.log('    stopproxy   [public_port]');
+  console.log('    addroute    [public_port [port [host [domain]]]]');
+  console.log('    deleteroute [public_port [port]]');
+});
+
+hachi_exec.parse(process.argv);
 
 //prompt for supplied fields and merges values to params
 function prompt(fields, params, fn) {
