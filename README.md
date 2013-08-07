@@ -13,7 +13,9 @@ Usage:
 var Hachi = require('hachi'),
   hachi = new Hachi({target: '127.0.0.1', port: '8080'});
 
-hachi.api.login({username: 'user', password: 'password'});
+hachi.api.users.login({username: 'user', password: 'password'}, function() {
+	console.log('Successfully logged in');
+});
 
 //...
 ```
