@@ -32,7 +32,7 @@ var hachi_exec = require('commander'),
 hachi_exec.version('0.0.1')
   .usage('[options] <command> [param1, [param2, [...]]]')
   .option('-s, --secure', 'Use if host runs over HTTPS')
-  .option('-r, --raw', 'Output raw data')
+  .option('-r, --raw', 'Output raw data');
 
 hachi_exec.on('--help', function() {
   console.log('  Commands:');
@@ -95,18 +95,17 @@ function callAndProcess(hachi, api_module, call, params) {
         prompt(err.required, params, function(params) {
           callAndProcess(hachi, api_module, call, params);
         });
-      }else{
+      } else {
         if (!err.message)
           console.log(err);
         process.exit(1);
       }
-    }else{
+    } else {
       //save authentication token if one
       if (result && result.raw && result.raw.token) {
         nconf.set('hosts:' + hachi.host.target + '_' + hachi.host.port + ':token', result.raw.token);
         nconf.save();
       }
-
       if (!hachi_exec.raw && result && result.message && result.message.push) {
         var table = new Table({
           head: result.message.shift()
@@ -128,7 +127,7 @@ function callAndProcess(hachi, api_module, call, params) {
 function connect(host) {
   if (!host || host && !(host.target && host.port)) {
     console.log('No target host specified');
-  }else{
+  } else {
     //save host
     var host_label = host.target + '_' + host.port;
     nconf.set('hosts:' + host_label, host);
@@ -137,7 +136,11 @@ function connect(host) {
 
     var hachi = new Hachi(host);
 
-    if (call === 'connect') return;
+    if (call === 'connect') {
+      console.log('Host set to ' + host.target + ':' + host.port);
+      process.exit();
+      return;
+    }
 
     //find api call
     if (call && call.indexOf('_') !== 0) {
@@ -176,7 +179,7 @@ if (call === 'connect') {
   prompt(fields, params, function(params) {
     connect(params);
   });
-}else{
+} else {
   //look for host already configured against current directory
   var host = false,
     path = nconf.get('paths:' + process.cwd());

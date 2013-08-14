@@ -7,8 +7,13 @@ API client and command line tool for [Ishiki](https://github.com/grownseed/haibu
 ```bash
 npm install hachi
 ```
+Or to install globally (preferred):
 
-Usage:
+```bash
+npm install -g hachi
+```
+
+## Client configuration
 ```javascript
 var Hachi = require('hachi'),
   hachi = new Hachi({target: '127.0.0.1', port: '8080'});
@@ -20,15 +25,10 @@ hachi.api.users.login({username: 'user', password: 'password'}, function() {
 //...
 ```
 
-Or to install globally (preferred):
-
+## Command line usage (global install):
 ```bash
-npm install -g hachi
-```
-
-Usage:
-```bash
-hachi
+hachi connect 127.0.0.1 8080
+hachi login user
 ```
 
 ## Help
